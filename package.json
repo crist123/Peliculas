@@ -1,0 +1,24 @@
+{
+    "name": "peliculas",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "server": "node server.js",
+        "package": "npm install",
+        "run": "start http://localhost:3000 & npm run server"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "angular-sanitize": "^1.6.10",
+        "angular-touch": "1.6.10",
+        "bootstrap": "^4.1.0",
+        "connect": "^3.6.6",
+        "font-awesome": "^4.7.0",
+        "serve-static": "^1.13.2",
+        "ui-bootstrap4": "^3.0.3",
+        "underscore": "^1.9.0"
+    }
+}

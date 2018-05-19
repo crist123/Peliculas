@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Búsqueda Peliculas</title>
+
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="node_modules/font-awesome/css/font-awesome.css" />
+    <link rel="stylesheet" href="node_modules/ui-bootstrap4/dist/ui-bootstrap-csp.css" />
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Cabin:700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="app/styles/main.css" />
+    <link rel="stylesheet" href="app/styles/grayscale.min.css">
+</head>
+
+<body id="page-top" ng-app="peliculasApp" ng-controller="indexController as peli">
+
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+        <!--Indicador de carga-->
+        <div id="loadingWidget" class="loadingContent" loading-widget>
+            <p class="bg-ligth">
+                <i class="fa fa-spinner fa-spin "></i>
+                <span translate>
+                    <b>Cargando</b>
+                </span>
+            </p>
+        </div>
+        <div class="container">
+            <a class="navbar-brand js-scroll-trigger" href="#page-top">Inicio</a>
+            <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                Menu
+                <i class="fa fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link js-scroll-trigger" href="#pelicula">peliculas</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="masthead">
+        <div class="intro-body">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 mx-auto">
+                        <h1>Encuentra todo en entretenimiento</h1>
+                        <p class="intro-text">Busque entre miles de peliculas, series, documentales y démas, el título que desee</p>
+                        <form novalidate>
+                            <div class="input-group">
+                                <input type="text" ng-model="peli.busqueda" uib-typeahead="res.titulo as res.titulo for res in peli.resultados"
+                                    typeahead-template-url="app/views/typeheadTemplate.html" class="form-control busque" ng-change="peli.obtenerInfo(peli.busqueda,null, 'multi', true)"
+                                    typeahead-wait-ms="1000" typeahead-on-select="peli.iniciarTab()" typeahead-is-open="peli.resultados-length>0" typeahead-focus-first="false">
+                                <!-- <input id="busq1" class="busque form-control" ng-model="peli.busqueda" type="text" placeholder="Escriba lo que desea búscar"
+                                    ng-keyup="peli.obtenerInfo('mover', null, true)"> -->
+                                <button id="buscar" href="#pelicula" class="input-group-addon btn btn-success js-scroll-trigger" type="submit" ng-click="peli.iniciarTab()">
+                                    <i class="fa fa-search"></i> Buscar
+                                </button>
+                            </div>
+                        </form>
+                        <!-- <label ng-if="!peli.resultados.length">{{peli.error}}</label> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="pelicula" class="content-section text-center" ng-if="peli.activarVistaPeli">
+        <div class="container">
+            <!-- <div class="col-lg-8 mx-auto" style="padding: 0;margin-bottom: 5px;">
+                <form novalidate>
+                    <div class="input-group">
+                        <input id="busq2" class="busque form-control" ng-model="peli.busqueda" type="text" placeholder="Escriba lo que desea búscar"
+                            ng-keyup="peli.obtenerInfo(null,null,true)">
+                        <a class="input-group-addon btn btn-success" type="submit" ng-click="peli.obtenerInfo()">
+                            <i class="fa fa-search"></i> Buscar
+                        </a>
+                    </div>
+                </form>
+            </div> -->
+            <div class="col-lg-8 mx-auto resultados">
+
+                <uib-tabset active="peli.tabActiva">
+                    <uib-tab ng-repeat="tab in peli.tabs track by $index" index="$index" heading="{{tab.title}}" select="peli.obtenerInfo(peli.busqueda, null, tab.filtro);peli.pag = 1">
+                        <div class="row" style="background: none;">
+                            <div class="col-12" style="padding:0">
+                                <h5 style="float: left;margin-bottom: 25px;">{{tab.title.toUpperCase()}} disponibles para
+                                    <span style="font-style:italic">{{peli.busqueda}}</span>:
+                                    <span class="badge badge-secondary">{{peli.totalResults}}</span>
+                                </h5>
+                                <div style="float: right" ng-if="peli.totalPag>1">
+                                    <span class="pagina" style="font-style:italic">Pág. {{peli.pag}} de {{peli.totalPag}}</span>
+                                    <button style="font-size: 11px;" class="btn btn-success btn-sm" ng-click="peli.obtenerInfo(peli.busqueda,'--', tab.filtro)" ng-if="peli.pag > 1"
+                                        uib-tooltip="Atras" ng-disabled="peli.cargando">
+                                        <i class="fa fa-arrow-left"></i> Atras</button>
+                                    <button style="font-size: 11px;" class="btn btn-success btn-sm" ng-click="peli.obtenerInfo(peli.busqueda,'++', tab.filtro)" ng-if="peli.pag < peli.totalPag"
+                                        uib-tooltip="Siguiente" ng-disabled="peli.cargando" tooltip-append-to-body="true">Siguiente
+                                        <i class="fa fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div ng-repeat="peli in peli.resultados track by $index">
+                            <div class="row">
+                                <div class="col-2" style="display: flex;align-items: center;">
+                                    <img class="img-fluid" width="185" ng-src="{{'https://image.tmdb.org/t/p/w300_and_h450_bestv2/' + peli.poster_path}}" alt="No encontrado"
+                                        onerror="this.src='app/images/200.png'; this.title='No encontrado'" ng-cloak>
+                                </div>
+                                <div class="col-10">
+                                    <label class="control-label" style="font-size:20px">
+                                        <a ng-href="{{'https://www.themoviedb.org/'+ tab.filtro + '/'+peli.id}}" target="_blank">{{peli.name || peli.title}} {{peli.adult ? '+18' : ''}}</a>
+                                    </label>
+                                    <br>
+                                    <label class="control-label" style="font-size:12px">{{peli.release_date ? ('Fecha de estreno: '+peli.release_date) : peli.first_air_date ? 'Fecha de emisión: '+peli.first_air_date : ''}}</label>
+                                    <br>
+                                    <label>{{peli.overview ? peli.overview : (tab.filtro=='tv' || tab.filtro=='movies') ? 'No hay descripción' : ''}}</label>
+                                </div>
+                            </div>
+                            <hr style="width: 100%;">
+                        </div>
+                        <div class="col-md-12" ng-if="!peli.resultados.length">
+                            <label>{{peli.error}}</label>
+                        </div>
+                        <div class="col-md-12" ng-if="peli.resultados.length">
+                            <div style="float: right" ng-if="peli.totalPag>1">
+                                <span class="pagina" style="font-style:italic">Pág. {{peli.pag}} de {{peli.totalPag}}</span>
+                                <button style="font-size: 11px;" class="btn btn-success btn-sm" ng-click="peli.obtenerInfo(peli.busqueda,'--', tab.filtro); peli.moverA('pelicula')" ng-if="peli.pag > 1"
+                                    uib-tooltip="Atras" ng-disabled="peli.cargando">
+                                    <i class="fa fa-arrow-left"></i> Atras</button>
+                                <button style="font-size: 11px;" class="btn btn-success btn-sm" ng-click="peli.obtenerInfo(peli.busqueda,'++', tab.filtro); peli.moverA('pelicula')" ng-if="peli.pag < peli.totalPag"
+                                    uib-tooltip="Siguiente" ng-disabled="peli.cargando" tooltip-append-to-body="true">Siguiente
+                                    <i class="fa fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </uib-tab>
+                </uib-tabset>
+
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container text-center">
+            <p>Copyright &copy; 2018. Todos los derechos reservados. Diseñado por ACEJ</p>
+        </div>
+    </footer>
+
+    <script src="scripts/jquery-3.3.1.min.js"></script>
+    <script src="scripts/angular.min.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="node_modules/angular-sanitize/angular-sanitize.js"></script>
+    <script src="node_modules/ui-bootstrap4/dist/ui-bootstrap-tpls.js"></script>
+    <script src="node_modules/angular-touch/angular-touch.js"></script>
+    <script src="node_modules/underscore/underscore-min.js"></script>
+    <script src="scripts/grayscale.min.js"></script>
+    <script src="scripts/jquery.easing.min.js"></script>
+
+    <script src="app/scripts/peliculasapp.js"></script>
+    <script src="app/scripts/services/interceptor.js"></script>
+    <script src="app/scripts/directives/directives.js"></script>
+    <script src="app/scripts/controller/index.js"></script>
+
+</body>
+
+</html>
