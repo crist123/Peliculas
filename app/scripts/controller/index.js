@@ -42,32 +42,45 @@ function controllerPeliculas($scope, $http, $timeout) {
         vm.obtenerInfo('a', null, 'multi', false);
     }
 
-    vm.iniciarTab = function () {
+    /**
+     * Inicia la tab primer tab con información 
+     */
+    vm.iniciarTab = function (recorrer) {
+
+        vm.errorPrincipal = false;
 
         if (vm.busqueda) {
+
             vm.tabActiva = 0;
             vm.activarVistaPeli = true;
 
+            // Si se desea recorrer las tabs hasta la primera que tiene información
+            if (recorrer)
+                vm.recorrerPelis = true;
+
+            // Mueve a la sección de películas
             $timeout(function () {
                 $scope.$apply();
 
                 $('html,body').animate({
                     scrollTop: $("#pelicula").offset().top - 10
                 }, 1000);
-                $('#busq2').focus();
-            })
+            });
         }
     }
 
     /**
      * Obtiene la información de las peliculas acorde a la búsqueda
+     * @param {string} busqueda Palabra a búscar
      * @param {string} accion Acción a ejecutar en el método (++,--,mover)
      * @param {string} filtro Filtra la query de acuerdo al tema
+     * @param {string} reiniciarTabs Reinicia el número de tab actual
      * */
     vm.obtenerInfo = function (busqueda, accion, filtro, reiniciarTabs) {
 
         vm.totalPag = 1;
         vm.totalResults = 0;
+        vm.errorPrincipal = false;
 
         // No continua sin filtro
         if (!filtro)
@@ -86,7 +99,8 @@ function controllerPeliculas($scope, $http, $timeout) {
         // Hace la consulta en la api para obtener los datos
         if (busqueda) {
             vm.cargando = true;
-            // vm.resultados = [];
+            vm.resultados = [];
+
             $http.get("https://api.themoviedb.org/3/search/" + filtro + "?api_key=627f5aa49c72d956816a42be38b338cd&language=es_ES&query=" + busqueda + (accion ? ("&page=" + vm.pag) : ""))
                 .then(function (rpt) {
 
@@ -95,6 +109,7 @@ function controllerPeliculas($scope, $http, $timeout) {
 
                         var temp = [];
 
+                        // Agrupa el título en una sola propiedad
                         _.each(rpt.data.results, function (result) {
                             result.titulo = result.title || result.name;
                             if (result.media_type != "person" && result.media_type != "network" && filtro == "multi")
@@ -108,10 +123,21 @@ function controllerPeliculas($scope, $http, $timeout) {
                         if (accion == "mover")
                             vm.moverA("pelicula");
 
+                        // Se restablece el recorrer pelis
+                        if (vm.recorrerPelis)
+                            vm.recorrerPelis = false;
                     } else {
-                        vm.error = "No se encontro la búsqueda";
+
+                        // Muestra el error si no hay resultados disponibles
+                        if (filtro == 'multi')
+                            vm.errorPrincipal = "No se encontro la búsqueda";
+                        else
+                            vm.error = "No se encontro la búsqueda";
+
                         vm.resultados = [];
-                        $('#busq1').focus();
+
+                        if (vm.recorrerPelis)
+                            vm.tabActiva++;
                     }
                     vm.cargando = false;
                 }, function (data) {

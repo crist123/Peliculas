@@ -21,7 +21,7 @@
     <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
         <!--Indicador de carga-->
         <div id="loadingWidget" class="loadingContent" loading-widget>
-            <p class="bg-ligth">
+            <p class="bg-ligth" style="font-size: 26px;">
                 <i class="fa fa-spinner fa-spin "></i>
                 <span translate>
                     <b>Cargando</b>
@@ -35,7 +35,7 @@
                 Menu
                 <i class="fa fa-bars"></i>
             </button>
-            <div class="collapse navbar-collapse" id="navbarResponsive">
+            <div class="collapse navbar-collapse" id="navbarResponsive" ng-if="peli.activarVistaPeli && !peli.errorPrincipal">
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
                         <a class="nav-link js-scroll-trigger" href="#pelicula">peliculas</a>
@@ -51,43 +51,32 @@
                 <div class="row">
                     <div class="col-lg-8 mx-auto">
                         <h1>Encuentra todo en entretenimiento</h1>
-                        <p class="intro-text">Busque entre miles de peliculas, series, documentales y démas, el título que desee</p>
+                        <p class="intro-text">Busque entre miles de peliculas, series, documentales y démas, el título que deseé</p>
                         <form novalidate>
                             <div class="input-group">
                                 <input type="text" ng-model="peli.busqueda" uib-typeahead="res.titulo as res.titulo for res in peli.resultados"
                                     typeahead-template-url="app/views/typeheadTemplate.html" class="form-control busque" ng-change="peli.obtenerInfo(peli.busqueda,null, 'multi', true)"
-                                    typeahead-wait-ms="1000" typeahead-on-select="peli.iniciarTab()" typeahead-is-open="peli.resultados-length>0" typeahead-focus-first="false">
-                                <!-- <input id="busq1" class="busque form-control" ng-model="peli.busqueda" type="text" placeholder="Escriba lo que desea búscar"
-                                    ng-keyup="peli.obtenerInfo('mover', null, true)"> -->
-                                <button id="buscar" href="#pelicula" class="input-group-addon btn btn-success js-scroll-trigger" type="submit" ng-click="peli.iniciarTab()">
+                                    typeahead-wait-ms="1000" typeahead-on-select="peli.iniciarTab(true)" typeahead-is-open="peli.resultados-length>0" typeahead-focus-first="false">
+                                <button id="buscar" href="#pelicula" class="input-group-addon btn btn-success js-scroll-trigger" type="submit" ng-click="peli.iniciarTab(true)">
                                     <i class="fa fa-search"></i> Buscar
                                 </button>
                             </div>
                         </form>
-                        <!-- <label ng-if="!peli.resultados.length">{{peli.error}}</label> -->
+                        <div class="col-md-12" ng-if="!peli.resultados.length && peli.errorPrincipal">
+                            <label>{{peli.errorPrincipal}}</label>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <section id="pelicula" class="content-section text-center" ng-if="peli.activarVistaPeli">
+    <section id="pelicula" class="content-section text-center" ng-if="peli.activarVistaPeli && !peli.errorPrincipal">
         <div class="container">
-            <!-- <div class="col-lg-8 mx-auto" style="padding: 0;margin-bottom: 5px;">
-                <form novalidate>
-                    <div class="input-group">
-                        <input id="busq2" class="busque form-control" ng-model="peli.busqueda" type="text" placeholder="Escriba lo que desea búscar"
-                            ng-keyup="peli.obtenerInfo(null,null,true)">
-                        <a class="input-group-addon btn btn-success" type="submit" ng-click="peli.obtenerInfo()">
-                            <i class="fa fa-search"></i> Buscar
-                        </a>
-                    </div>
-                </form>
-            </div> -->
             <div class="col-lg-8 mx-auto resultados">
 
                 <uib-tabset active="peli.tabActiva">
-                    <uib-tab ng-repeat="tab in peli.tabs track by $index" index="$index" heading="{{tab.title}}" select="peli.obtenerInfo(peli.busqueda, null, tab.filtro);peli.pag = 1">
+                    <uib-tab ng-repeat="tab in peli.tabs track by $index" index="$index" heading="{{tab.title}}" select="peli.obtenerInfo(peli.busqueda, null, tab.filtro);peli.pag = 1;peli.error=''">
                         <div class="row" style="background: none;">
                             <div class="col-12" style="padding:0">
                                 <h5 style="float: left;margin-bottom: 25px;">{{tab.title.toUpperCase()}} disponibles para
@@ -109,8 +98,10 @@
                         <div ng-repeat="peli in peli.resultados track by $index">
                             <div class="row">
                                 <div class="col-2" style="display: flex;align-items: center;">
-                                    <img class="img-fluid" width="185" ng-src="{{'https://image.tmdb.org/t/p/w300_and_h450_bestv2/' + peli.poster_path}}" alt="No encontrado"
-                                        onerror="this.src='app/images/200.png'; this.title='No encontrado'" ng-cloak>
+                                        <a ng-href="{{'https://www.themoviedb.org/'+ tab.filtro + '/'+peli.id}}" target="_blank">
+                                            <img class="img-fluid" width="185" ng-src="{{'https://image.tmdb.org/t/p/w300_and_h450_bestv2/' + peli.poster_path}}" alt="No encontrado"
+                                                onerror="this.src='app/images/200.png'; this.title='No encontrado'" ng-cloak>                                        
+                                        </a>
                                 </div>
                                 <div class="col-10">
                                     <label class="control-label" style="font-size:20px">
@@ -120,6 +111,8 @@
                                     <label class="control-label" style="font-size:12px">{{peli.release_date ? ('Fecha de estreno: '+peli.release_date) : peli.first_air_date ? 'Fecha de emisión: '+peli.first_air_date : ''}}</label>
                                     <br>
                                     <label>{{peli.overview ? peli.overview : (tab.filtro=='tv' || tab.filtro=='movies') ? 'No hay descripción' : ''}}</label>
+                                    <br>
+                                    <a style="float:right; margin-bottom:8px" uib-tooltip="Ver detalle" ng-href="{{'https://www.themoviedb.org/'+ tab.filtro + '/'+peli.id}}" target="_blank">Ver detalles...</a>
                                 </div>
                             </div>
                             <hr style="width: 100%;">
