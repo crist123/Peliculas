@@ -14,11 +14,11 @@
     "dependencies": {
         "angular-sanitize": "^1.6.10",
         "angular-touch": "1.6.10",
-        "bootstrap": "^4.1.0",
+        "bootstrap": "^4.6.2",
         "connect": "^3.6.6",
         "font-awesome": "^4.7.0",
         "serve-static": "^1.13.2",
         "ui-bootstrap4": "^3.0.3",
-        "underscore": "^1.9.0"
+        "underscore": "^1.13.6"
     }
 }
